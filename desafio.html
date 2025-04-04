@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desafio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      color: #4a148c;
+      margin-bottom: 20px;
+    }
+
+    .cronometro {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .equipes {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .equipe {
+      width: 45%;
+      text-align: center;
+    }
+
+    .equipe h2 {
+      font-size: 1.2em;
+      color: #4a148c;
+      margin-bottom: 10px;
+    }
+
+    .equipe select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+
+    .button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4a148c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      margin-top: 20px;
+    }
+
+    .button:hover {
+      background-color: #6a1b9a;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Desafio</h1>
+
+    <!-- Seleção de Tempo -->
+    <div id="selecaoTempo">
+      <h2>Selecione o tempo:</h2>
+      <select id="tempoSelecionado">
+        <option value="5">5 segundos</option>
+        <option value="10">10 segundos</option>
+        <option value="15">15 segundos</option>
+        <option value="20">20 segundos</option>
+        <option value="25">25 segundos</option>
+        <option value="30">30 segundos</option>
+      </select>
+      <button class="button" onclick="iniciarDesafio()">Iniciar Desafio</button>
+    </div>
+
+    <!-- Cronômetro -->
+    <div class="cronometro hidden" id="cronometro">00:00</div>
+
+    <!-- Formulário para enviar pontuação -->
+    <div id="formularioPontuacao" class="hidden">
+      <h2>Insira a Pontuação</h2>
+      <div class="equipes">
+        <div class="equipe">
+          <h2>Equipe 1</h2>
+          <select id="equipe1">
+            <option value="0">Sem Pontuação</option>
+            <option value="5">5 pontos</option>
+            <option value="10">10 pontos</option>
+            <option value="15">15 pontos</option>
+            <option value="20">20 pontos</option>
+            <option value="25">25 pontos</option>
+            <option value="30">30 pontos</option>
+          </select>
+        </div>
+
+        <div class="equipe">
+          <h2>Equipe 2</h2>
+          <select id="equipe2">
+            <option value="0">Sem Pontuação</option>
+            <option value="5">5 pontos</option>
+            <option value="10">10 pontos</option>
+            <option value="15">15 pontos</option>
+            <option value="20">20 pontos</option>
+            <option value="25">25 pontos</option>
+            <option value="30">30 pontos</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="button" onclick="enviarPontuacao()">Enviar Pontuação</button>
+    </div>
+
+    <!-- Botão para sair -->
+    <button class="button hidden" id="botaoSair" onclick="sair()">Sair</button>
+  </div>
+
+  <script>
+    let tempoRestante;
+    let cronometro;
+    let equipeAtual = 1; // 1 para Equipe 1, 2 para Equipe 2
+
+    // Função para iniciar o desafio
+    function iniciarDesafio() {
+      const tempoSelecionado = parseInt(document.getElementById('tempoSelecionado').value);
+      tempoRestante = tempoSelecionado;
+
+      // Oculta a seleção de tempo e exibe o cronômetro
+      document.getElementById('selecaoTempo').classList.add('hidden');
+      document.getElementById('cronometro').classList.remove('hidden');
+      document.getElementById('botaoSair').classList.remove('hidden');
+
+      // Inicia o cronômetro para a primeira equipe
+      iniciarCronometro(tempoSelecionado);
+    }
+
+    // Função para iniciar o cronômetro
+    function iniciarCronometro(tempo) {
+      tempoRestante = tempo;
+      document.getElementById('cronometro').textContent = `00:${String(tempoRestante).padStart(2, '0')}`;
+
+      cronometro = setInterval(() => {
+        tempoRestante--;
+        document.getElementById('cronometro').textContent = `00:${String(tempoRestante).padStart(2, '0')}`;
+
+        // Quando o tempo acabar, verifica se é a vez da segunda equipe
+        if (tempoRestante <= 0) {
+          clearInterval(cronometro);
+
+          if (equipeAtual === 1) {
+            // Se for a primeira equipe, reinicia o cronômetro para a segunda equipe
+            equipeAtual = 2;
+            alert("Tempo da Equipe 1 acabou! Agora é a vez da Equipe 2.");
+            iniciarCronometro(tempo);
+          } else {
+            // Se for a segunda equipe, exibe o formulário de pontuação
+            document.getElementById('cronometro').classList.add('hidden');
+            document.getElementById('formularioPontuacao').classList.remove('hidden');
+          }
+        }
+      }, 1000);
+    }
+
+    // Função para enviar a pontuação das equipes
+    async function enviarPontuacao() {
+      const pontuacaoEquipe1 = document.getElementById('equipe1').value;
+      const pontuacaoEquipe2 = document.getElementById('equipe2').value;
+
+      // Enviar pontuação para a Equipe 1
+      await fetch('http://localhost:3000/pontuacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ equipe: 'EQUIPE-1', pontos: parseInt(pontuacaoEquipe1) })
+      });
+
+      // Enviar pontuação para a Equipe 2
+      await fetch('http://localhost:3000/pontuacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ equipe: 'EQUIPE-2', pontos: parseInt(pontuacaoEquipe2) })
+      });
+
+      alert("Pontuação enviada com sucesso!");
+      sair(); // Redireciona para a página de seleção de histórias após enviar a pontuação
+    }
+
+    // Função para sair e redirecionar para a página de seleção de histórias
+    function sair() {
+      clearInterval(cronometro);
+      window.location.href = 'selecionar_historia.html';
+    }
+  </script>
+</body>
+</html>

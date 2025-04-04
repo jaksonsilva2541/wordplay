@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitura da História</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Leitura</h1>
+    </header>
+     <main>
+        <div class="reading-content" id="conteudoHistoria">
+            <!-- O conteúdo da história será carregado aqui -->
+        </div>
+        <button class="button" onclick="concluirLeitura()">Concluído</button>
+    </main>
+
+    <script>
+        async function carregarHistoria() {
+            const id = localStorage.getItem('historiaSelecionada');  // Recupera o ID da história selecionada
+            const conteudoHistoria = document.getElementById('conteudoHistoria');
+
+            console.log("ID da história selecionada:", id);  // Verifique se o ID está correto
+
+            if (id) {
+                // Solicita o conteúdo da história através da API
+                const response = await fetch(`http://localhost:3000/historias/${id}`);
+                const historia = await response.json();
+
+                console.log("História carregada:", historia);  // Verifique o conteúdo da história retornado
+
+                if (historia && historia.titulo && historia.conteudo) {
+                    conteudoHistoria.innerHTML = `<h2>${historia.titulo}</h2><p>${historia.conteudo}</p>`;
+                } else {
+                    conteudoHistoria.innerHTML = `<p>História não encontrada.</p>`;
+                }
+            } else {
+                conteudoHistoria.innerHTML = `<p>História não selecionada.</p>`;
+            }
+        }
+
+        // Carregar a história quando a página for carregada
+        window.onload = carregarHistoria;
+
+        // Função para redirecionar para a página de perguntas
+        function concluirLeitura() {
+            // Redireciona para a página de perguntas
+            window.location.href = 'pergunta.html';  // Redirecionamento para a página de perguntas
+        }
+
+        async function carregarPerguntas() {
+    const historiaId = localStorage.getItem('historiaSelecionada');
+    const perguntaDiv = document.getElementById('pergunta');
+    const listaAlternativas = document.getElementById('listaAlternativas');
+
+    if (!historiaId) {
+        perguntaDiv.innerHTML = "<p>Erro ao carregar perguntas.</p>";
+        return;
+    }
+
+    const response = await fetch(`http://localhost:3000/perguntas/${historiaId}`);
+    const perguntas = await response.json();
+
+    if (perguntas.length > 0) {
+        const pergunta = perguntas[0]; // Pegando a primeira pergunta da lista
+
+        perguntaDiv.innerHTML = `<p>${pergunta.pergunta}</p>`;
+        listaAlternativas.innerHTML = `
+            <li><input type="radio" name="alternativa" value="${pergunta.resposta_correta}"> ${pergunta.resposta_correta}</li>
+            <li><input type="radio" name="alternativa" value="${pergunta.alternativa1}"> ${pergunta.alternativa1}</li>
+            <li><input type="radio" name="alternativa" value="${pergunta.alternativa2}"> ${pergunta.alternativa2}</li>
+            <li><input type="radio" name="alternativa" value="${pergunta.alternativa3}"> ${pergunta.alternativa3}</li>
+        `;
+    } else {
+        perguntaDiv.innerHTML = "<p>Nenhuma pergunta encontrada.</p>";
+    }
+}
+
+// Função para verificar resposta
+function enviarResposta() {
+    const respostaSelecionada = document.querySelector('input[name="alternativa"]:checked');
+
+    if (!respostaSelecionada) {
+        alert("Por favor, selecione uma resposta!");
+        return;
+    }
+
+    const respostaCorreta = document.querySelector('input[value="' + respostaSelecionada.value + '"]');
+    if (respostaCorreta) {
+        alert("Resposta correta!");
+    } else {
+        alert("Resposta incorreta!");
+    }
+}
+
+// Carregar perguntas ao abrir a página de quiz
+if (window.location.pathname.includes('pergunta.html')) {
+    carregarPerguntas();
+}
+
+    </script>
+
+   
+</body>
+</html>

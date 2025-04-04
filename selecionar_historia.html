@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecionar História</title>
+    
+    <style>
+        /* Estilos CSS para animações e layout */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4a148c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .search-container input {
+            padding: 10px;
+            border: 2px solid #4a148c;
+            border-radius: 5px;
+            width: 300px;
+            font-size: 1em;
+        }
+
+        .search-container button {
+            background-color: #4a148c;
+            border: none;
+            border-radius: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-container button:hover {
+            background-color: #6a1b9a;
+        }
+
+        .search-icon {
+            width: 24px;
+            height: 24px;
+            filter: invert(1); /* Inverte a cor do ícone para branco */
+        }
+
+        .story-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .story-item {
+            text-decoration: none;
+            color: #333;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .story-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .story-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .story-item p {
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        /* Animação de fade-in para as histórias */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .story-item {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Selecionar História</h1>
+    </header>
+    <main>
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Pesquisar">
+            <button onclick="pesquisar()">
+                <img src="search-icon.png" alt="Pesquisar" class="search-icon">
+            </button>
+        </div>
+
+        <div class="story-grid">
+            <!-- As histórias serão carregadas dinamicamente aqui -->
+        </div>
+    </main>
+
+    <script>
+        // Função para carregar as histórias da API
+        async function carregarHistorias() {
+            const response = await fetch('http://localhost:3000/historias');
+            const historias = await response.json();
+
+            const lista = document.querySelector('.story-grid');
+            lista.innerHTML = '';  // Limpa a lista antes de adicionar novas histórias
+
+            historias.forEach(historia => {
+                const item = document.createElement('a');
+                item.href = "leitura.html";
+                item.className = 'story-item';
+                item.onclick = function() {
+                    // Salva o ID da história no localStorage
+                    localStorage.setItem('historiaSelecionada', historia.id);
+                };
+                item.innerHTML = `<img src="historia${historia.id}.jpg" alt="${historia.titulo}"><p>${historia.titulo}</p>`;
+                lista.appendChild(item);
+            });
+        }
+
+        // Função para pesquisar histórias
+        function pesquisar() {
+            const termo = document.getElementById('search').value.toLowerCase();
+            const historias = document.querySelectorAll('.story-item');
+
+            historias.forEach(historia => {
+                const titulo = historia.querySelector('p').textContent.toLowerCase();
+                if (titulo.includes(termo)) {
+                    historia.style.display = 'block';
+                } else {
+                    historia.style.display = 'none';
+                }
+            });
+        }
+
+        // Carregar as histórias quando a página for carregada
+        window.onload = carregarHistorias;
+    </script>
+</body>
+</html>

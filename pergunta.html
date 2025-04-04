@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz</title>
+  <style>
+    /* Estilos CSS */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      color: #4a148c;
+      margin-bottom: 20px;
+    }
+
+    /* Estilo para os botões das equipes */
+    .teams {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .team {
+      background-color: #4a148c;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+    }
+
+    .team:hover {
+      background-color: #6a1b9a;
+    }
+
+    /* Estilo para a pergunta */
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    /* Estilo para as alternativas */
+    .alternativas ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .alternativas li {
+      margin: 10px 0;
+      text-align: left;
+    }
+
+    /* Estilo para o botão "Enviar Resposta" */
+    .next-button {
+      display: none; /* Inicialmente oculto */
+      width: 100%;
+      padding: 10px;
+      background-color: #4a148c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      margin-top: 20px;
+    }
+
+    .next-button:hover {
+      background-color: #6a1b9a;
+    }
+
+    /* Estilo para o ranking */
+    #ranking {
+      margin-top: 20px;
+    }
+
+    #rankingList {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #rankingList li {
+      background-color: #f0f0f0;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Quiz</h1>
+
+    <!-- Botões para selecionar a equipe que vai responder -->
+    <div id="selecionarEquipe">
+      <h2>Selecione a equipe que vai responder:</h2>
+      <div class="teams">
+        <button class="team" onclick="selecionarEquipe('EQUIPE-1')">EQUIPE 1</button>
+        <button class="team" onclick="selecionarEquipe('EQUIPE-2')">EQUIPE 2</button>
+      </div>
+    </div>
+
+    <div class="question" id="pergunta">
+      <!-- Pergunta será carregada aqui -->
+    </div>
+    
+    <div id="alternativas" class="alternativas">
+      <ul id="listaAlternativas">
+        <!-- Alternativas serão inseridas aqui -->
+      </ul>
+    </div>
+    
+    <button class="next-button" id="enviarRespostaButton" onclick="enviarResposta()">Enviar Resposta</button>
+    
+    <!-- Ranking das equipes (sempre visível) -->
+    <div id="ranking">
+      <h2>Ranking</h2>
+      <ul id="rankingList"></ul>
+    </div>
+  </div>
+  
+  <script>
+    let equipeSelecionada = null; // Armazena a equipe selecionada para responder
+    let contadorErros = 0; // Conta quantas vezes seguidas as equipes erraram
+
+    // Função para selecionar a equipe que vai responder
+    function selecionarEquipe(equipe) {
+        equipeSelecionada = equipe;
+        alert(`Equipe selecionada: ${equipe}`);
+        document.getElementById('selecionarEquipe').style.display = 'none'; // Oculta os botões após a seleção
+        document.getElementById('enviarRespostaButton').style.display = 'block'; // Exibe o botão "Enviar Resposta"
+        carregarPerguntas(); // Carrega as perguntas após selecionar a equipe
+    }
+
+    // Função para carregar as perguntas da história selecionada
+    async function carregarPerguntas() {
+        const historiaId = localStorage.getItem('historiaSelecionada');
+        const perguntaDiv = document.getElementById('pergunta');
+        const listaAlternativas = document.getElementById('listaAlternativas');
+
+        if (!historiaId) {
+            perguntaDiv.innerHTML = "<p>Erro ao carregar perguntas.</p>";
+            return;
+        }
+
+        const response = await fetch(`http://localhost:3000/perguntas/${historiaId}`);
+        const perguntas = await response.json();
+
+        if (perguntas.length > 0) {
+            const pergunta = perguntas[0]; // Pegando a primeira pergunta
+            
+            perguntaDiv.innerHTML = `<p>${pergunta.pergunta}</p>`;
+            listaAlternativas.innerHTML = `
+                <li><input type="radio" name="alternativa" value="${pergunta.resposta_correta}"> ${pergunta.resposta_correta}</li>
+                <li><input type="radio" name="alternativa" value="${pergunta.alternativa1}"> ${pergunta.alternativa1}</li>
+                <li><input type="radio" name="alternativa" value="${pergunta.alternativa2}"> ${pergunta.alternativa2}</li>
+                <li><input type="radio" name="alternativa" value="${pergunta.alternativa3}"> ${pergunta.alternativa3}</li>
+            `;
+
+            // Exibir a equipe que está respondendo
+            exibirEquipeRespondendo();
+        } else {
+            perguntaDiv.innerHTML = "<p>Nenhuma pergunta encontrada.</p>";
+        }
+    }
+
+    // Função para exibir a equipe que está respondendo
+    function exibirEquipeRespondendo() {
+        if (equipeSelecionada) {
+            const perguntaDiv = document.getElementById('pergunta');
+            // Remove a mensagem anterior da equipe respondendo
+            const mensagemAnterior = perguntaDiv.querySelector('.equipe-respondendo');
+            if (mensagemAnterior) {
+                mensagemAnterior.remove();
+            }
+            // Adiciona a nova mensagem da equipe respondendo
+            const mensagemEquipe = document.createElement('p');
+            mensagemEquipe.className = 'equipe-respondendo';
+            mensagemEquipe.textContent = `Equipe respondendo: ${equipeSelecionada}`;
+            perguntaDiv.appendChild(mensagemEquipe);
+        }
+    }
+
+    // Função para obter o ranking das equipes
+    async function obterRanking() {
+        const response = await fetch('http://localhost:3000/ranking');
+        const ranking = await response.json();
+        return ranking;
+    }
+
+    // Função para atualizar a pontuação da equipe
+    async function atualizarPontuacao(equipe, pontos) {
+        const response = await fetch('http://localhost:3000/pontuacao', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ equipe: equipe, pontos: pontos })
+        });
+
+        const data = await response.json();
+        console.log(data.message);
+    }
+
+    // Função para exibir o ranking das equipes
+    async function exibirRanking() {
+        const ranking = await obterRanking();
+        const rankingList = document.getElementById('rankingList');
+        rankingList.innerHTML = '';
+
+        ranking.forEach(equipe => {
+            const item = document.createElement('li');
+            item.textContent = `${equipe.equipe}: ${equipe.pontos} pontos`;
+            rankingList.appendChild(item);
+        });
+    }
+
+    // Função para enviar a resposta e verificar se está correta
+    async function enviarResposta() {
+        const respostaSelecionada = document.querySelector('input[name="alternativa"]:checked');
+
+        if (!respostaSelecionada) {
+            alert("Por favor, selecione uma resposta!");
+            return;
+        }
+
+        const historiaId = localStorage.getItem('historiaSelecionada');
+
+        const response = await fetch(`http://localhost:3000/perguntas/${historiaId}`);
+        const perguntas = await response.json();
+
+        if (perguntas.length > 0) {
+            const respostaCorreta = perguntas[0].resposta_correta;
+
+            if (respostaSelecionada.value === respostaCorreta) {
+                alert(`Resposta correta! Pontos adicionados para a equipe ${equipeSelecionada}.`);
+
+                // Atualizar a pontuação da equipe
+                await atualizarPontuacao(equipeSelecionada, 10); // 10 pontos por resposta correta
+
+                // Atualizar o ranking
+                await exibirRanking();
+
+                // Resetar o contador de erros
+                contadorErros = 0;
+            } else {
+                alert(`Resposta incorreta! Vez passada para a próxima equipe.`);
+                contadorErros++; // Incrementa o contador de erros
+
+                // Verifica se as duas equipes erraram
+                if (contadorErros >= 2) {
+                    alert("Ambas as equipes erraram! Redirecionando para a página de desafio...");
+                    window.location.href = 'desafio.html'; // Redireciona para a página de desafio
+                    return;
+                }
+            }
+
+            // Passar a vez para a próxima equipe
+            if (equipeSelecionada === 'EQUIPE-1') {
+                equipeSelecionada = 'EQUIPE-2';
+            } else {
+                equipeSelecionada = 'EQUIPE-1';
+            }
+
+            // Atualizar a exibição da equipe respondendo
+            exibirEquipeRespondendo();
+        }
+    }
+
+    // Carregar perguntas ao entrar na página (após selecionar a equipe)
+    if (window.location.pathname.includes('pergunta.html')) {
+        // Exibe os botões para selecionar a equipe
+        document.getElementById('selecionarEquipe').style.display = 'block';
+
+        // Exibe o ranking das equipes ao carregar a página
+        exibirRanking();
+    }
+  </script>
+</body>
+</html>
