@@ -85,7 +85,8 @@
         .story-item img {
             width: 100%;
             height: 150px;
-            object-fit: cover;
+            object-fit: contain;
+            background-color: white; /* Opcional, para manter fundo bonito */
         }
 
         .story-item p {
@@ -111,6 +112,55 @@
         .story-item {
             animation: fadeIn 0.5s ease-out;
         }
+
+        /* Estilos para o ranking */
+        .ranking-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            padding: 15px;
+            max-width: 800px;
+        }
+
+        .ranking-title {
+            color: #4a148c;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .ranking-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .ranking-item {
+            background-color: #f3e5f5;
+            border-radius: 8px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            min-width: 200px;
+        }
+
+        .ranking-position {
+            font-weight: bold;
+            color: #4a148c;
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .ranking-team {
+            flex-grow: 1;
+        }
+
+        .ranking-points {
+            font-weight: bold;
+            color: #6a1b9a;
+        }
     </style>
 </head>
 <body>
@@ -118,6 +168,14 @@
         <h1>Selecionar História</h1>
     </header>
     <main>
+        <!-- Seção do Ranking -->
+        <div class="ranking-container">
+            <h2 class="ranking-title">Ranking das Equipes</h2>
+            <div class="ranking-list" id="rankingList">
+                <!-- O ranking será carregado dinamicamente aqui -->
+            </div>
+        </div>
+
         <div class="search-container">
             <input type="text" id="search" placeholder="Pesquisar">
             <button onclick="pesquisar()">
@@ -147,9 +205,42 @@
                     // Salva o ID da história no localStorage
                     localStorage.setItem('historiaSelecionada', historia.id);
                 };
-                item.innerHTML = `<img src="historia${historia.id}.jpg" alt="${historia.titulo}"><p>${historia.titulo}</p>`;
+               item.innerHTML = `<img src="img/historia${historia.id}.jpg" alt="${historia.titulo}"><p>${historia.titulo}</p>`;
+
                 lista.appendChild(item);
             });
+        }
+
+        // Função para carregar o ranking
+        async function carregarRanking() {
+            try {
+                const response = await fetch('http://localhost:3000/ranking');
+                const ranking = await response.json();
+
+                const rankingList = document.getElementById('rankingList');
+                rankingList.innerHTML = '';
+
+                if (ranking.length === 0) {
+                    rankingList.innerHTML = '<p>Nenhuma equipe registrada ainda.</p>';
+                    return;
+                }
+
+                ranking.forEach((equipe, index) => {
+                    const rankingItem = document.createElement('div');
+                    rankingItem.className = 'ranking-item';
+                    
+                    rankingItem.innerHTML = `
+                        <span class="ranking-position">${index + 1}º</span>
+                        <span class="ranking-team">${equipe.equipe}</span>
+                        <span class="ranking-points">${equipe.pontos} pts</span>
+                    `;
+
+                    rankingList.appendChild(rankingItem);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar ranking:', error);
+                document.getElementById('rankingList').innerHTML = '<p>Erro ao carregar o ranking. Tente novamente mais tarde.</p>';
+            }
         }
 
         // Função para pesquisar histórias
@@ -167,8 +258,11 @@
             });
         }
 
-        // Carregar as histórias quando a página for carregada
-        window.onload = carregarHistorias;
+        // Carregar as histórias e o ranking quando a página for carregada
+        window.onload = function() {
+            carregarHistorias();
+            carregarRanking();
+        };
     </script>
 </body>
 </html>

@@ -138,7 +138,11 @@
 
       <button class="button" onclick="enviarPontuacao()">Enviar Pontuação</button>
     </div>
-
+<div id="mensagemRanking" class="hidden">
+  <h2>Pontuações Enviadas com Sucesso!</h2>
+  <p>Veja o ranking atualizado abaixo:</p>
+  <ul id="ranking"></ul>
+</div>
     <!-- Botão para sair -->
     <button class="button hidden" id="botaoSair" onclick="sair()">Sair</button>
   </div>
@@ -189,28 +193,36 @@
       }, 1000);
     }
 
-    // Função para enviar a pontuação das equipes
-    async function enviarPontuacao() {
-      const pontuacaoEquipe1 = document.getElementById('equipe1').value;
-      const pontuacaoEquipe2 = document.getElementById('equipe2').value;
+async function enviarPontuacao() {
+    const pontuacaoEquipe1 = document.getElementById('equipe1').value;
+    const pontuacaoEquipe2 = document.getElementById('equipe2').value;
 
-      // Enviar pontuação para a Equipe 1
-      await fetch('http://localhost:3000/pontuacao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ equipe: 'EQUIPE-1', pontos: parseInt(pontuacaoEquipe1) })
-      });
+    try {
+        // Enviar pontuação para as equipes (mantenha seu código atual aqui)
+        await fetch('http://localhost:3000/pontuacao', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ equipe: 'EQUIPE-1', pontos: parseInt(pontuacaoEquipe1) })
+        });
 
-      // Enviar pontuação para a Equipe 2
-      await fetch('http://localhost:3000/pontuacao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ equipe: 'EQUIPE-2', pontos: parseInt(pontuacaoEquipe2) })
-      });
+        await fetch('http://localhost:3000/pontuacao', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ equipe: 'EQUIPE-2', pontos: parseInt(pontuacaoEquipe2) })
+        });
 
-      alert("Pontuação enviada com sucesso!");
-      sair(); // Redireciona para a página de seleção de histórias após enviar a pontuação
+        // Adicione esta linha para garantir o redirecionamento
+        window.location.href = 'selecionar_historia.html';
+        
+        // Remova o alerta se quiser (ou mantenha para debug)
+        // alert("Pontuação enviada com sucesso!");
+        
+    } catch (error) {
+        console.error("Erro ao enviar pontuação:", error);
+        alert("Erro ao enviar pontuação. Tente novamente.");
     }
+}
+
 
     // Função para sair e redirecionar para a página de seleção de histórias
     function sair() {

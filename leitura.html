@@ -4,104 +4,249 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leitura da História</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --primary-color: #4a148c;
+            --primary-light: #6a1b9a;
+            --background: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --secondary-text: #666666;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--background);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+        }
+
+        .reading-content {
+            padding: 0;
+        }
+
+        .reading-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto 15px;
+            border-radius: 6px;
+            max-height: 200px;
+            object-fit: cover;
+        }
+
+        .reading-content h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+
+        .reading-content p {
+            color: var(--text-color);
+            font-size: 0.95em;
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            display: block;
+            margin: 15px auto;
+            transition: all 0.2s;
+            width: 150px;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Ranking compacto */
+        .ranking-title {
+            color: var(--primary-color);
+            text-align: center;
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        .ranking-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .ranking-item {
+            background-color: #f3e5f5;
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .ranking-position {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 8px;
+            font-size: 0.9em;
+        }
+
+        .ranking-team {
+            flex-grow: 1;
+            font-size: 0.9em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ranking-points {
+            font-weight: bold;
+            color: var(--primary-light);
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .ranking-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
         <h1>Leitura</h1>
     </header>
-     <main>
-        <div class="reading-content" id="conteudoHistoria">
+    
+    <div class="container">
+        <!-- Ranking compacto -->
+        <div class="card">
+            <h2 class="ranking-title">Ranking das Equipes</h2>
+            <div class="ranking-list" id="rankingList">
+                <!-- O ranking será carregado dinamicamente aqui -->
+            </div>
+        </div>
+
+        <!-- Conteúdo da história -->
+        <div class="card reading-content" id="conteudoHistoria">
             <!-- O conteúdo da história será carregado aqui -->
         </div>
+        
         <button class="button" onclick="concluirLeitura()">Concluído</button>
-    </main>
+    </div>
 
     <script>
         async function carregarHistoria() {
-            const id = localStorage.getItem('historiaSelecionada');  // Recupera o ID da história selecionada
+            const id = localStorage.getItem('historiaSelecionada');
             const conteudoHistoria = document.getElementById('conteudoHistoria');
 
-            console.log("ID da história selecionada:", id);  // Verifique se o ID está correto
-
             if (id) {
-                // Solicita o conteúdo da história através da API
-                const response = await fetch(`http://localhost:3000/historias/${id}`);
-                const historia = await response.json();
+                try {
+                    const response = await fetch(`http://localhost:3000/historias/${id}`);
+                    const historia = await response.json();
 
-                console.log("História carregada:", historia);  // Verifique o conteúdo da história retornado
-
-                if (historia && historia.titulo && historia.conteudo) {
-                    conteudoHistoria.innerHTML = `<h2>${historia.titulo}</h2><p>${historia.conteudo}</p>`;
-                } else {
-                    conteudoHistoria.innerHTML = `<p>História não encontrada.</p>`;
+                    if (historia?.titulo && historia?.conteudo) {
+                        conteudoHistoria.innerHTML = `
+                            <img src="img/historia${id}.jpg" alt="${historia.titulo}">
+                            <h2>${historia.titulo}</h2>
+                            <p>${historia.conteudo}</p>
+                        `;
+                    } else {
+                        conteudoHistoria.innerHTML = `<p>História não encontrada.</p>`;
+                    }
+                } catch (error) {
+                    conteudoHistoria.innerHTML = `<p>Erro ao carregar a história.</p>`;
+                    console.error("Erro ao carregar história:", error);
                 }
             } else {
                 conteudoHistoria.innerHTML = `<p>História não selecionada.</p>`;
             }
         }
 
-        // Carregar a história quando a página for carregada
-        window.onload = carregarHistoria;
+        async function carregarRanking() {
+            try {
+                const response = await fetch('http://localhost:3000/ranking');
+                const ranking = await response.json();
+                const rankingList = document.getElementById('rankingList');
+                rankingList.innerHTML = '';
 
-        // Função para redirecionar para a página de perguntas
-        function concluirLeitura() {
-            // Redireciona para a página de perguntas
-            window.location.href = 'pergunta.html';  // Redirecionamento para a página de perguntas
+                if (ranking.length === 0) {
+                    rankingList.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Nenhuma equipe registrada.</p>';
+                    return;
+                }
+
+                ranking.forEach((equipe, index) => {
+                    const rankingItem = document.createElement('div');
+                    rankingItem.className = 'ranking-item';
+                    
+                    rankingItem.innerHTML = `
+                        <span class="ranking-position">${index + 1}º</span>
+                        <span class="ranking-team" title="${equipe.equipe}">${equipe.equipe}</span>
+                        <span class="ranking-points">${equipe.pontos} pts</span>
+                    `;
+
+                    rankingList.appendChild(rankingItem);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar ranking:', error);
+                rankingList.innerHTML = '<p style="grid-column:1/-1;text-align:center;">Erro ao carregar o ranking.</p>';
+            }
         }
 
-        async function carregarPerguntas() {
-    const historiaId = localStorage.getItem('historiaSelecionada');
-    const perguntaDiv = document.getElementById('pergunta');
-    const listaAlternativas = document.getElementById('listaAlternativas');
+        function concluirLeitura() {
+            window.location.href = 'pergunta.html';
+        }
 
-    if (!historiaId) {
-        perguntaDiv.innerHTML = "<p>Erro ao carregar perguntas.</p>";
-        return;
-    }
-
-    const response = await fetch(`http://localhost:3000/perguntas/${historiaId}`);
-    const perguntas = await response.json();
-
-    if (perguntas.length > 0) {
-        const pergunta = perguntas[0]; // Pegando a primeira pergunta da lista
-
-        perguntaDiv.innerHTML = `<p>${pergunta.pergunta}</p>`;
-        listaAlternativas.innerHTML = `
-            <li><input type="radio" name="alternativa" value="${pergunta.resposta_correta}"> ${pergunta.resposta_correta}</li>
-            <li><input type="radio" name="alternativa" value="${pergunta.alternativa1}"> ${pergunta.alternativa1}</li>
-            <li><input type="radio" name="alternativa" value="${pergunta.alternativa2}"> ${pergunta.alternativa2}</li>
-            <li><input type="radio" name="alternativa" value="${pergunta.alternativa3}"> ${pergunta.alternativa3}</li>
-        `;
-    } else {
-        perguntaDiv.innerHTML = "<p>Nenhuma pergunta encontrada.</p>";
-    }
-}
-
-// Função para verificar resposta
-function enviarResposta() {
-    const respostaSelecionada = document.querySelector('input[name="alternativa"]:checked');
-
-    if (!respostaSelecionada) {
-        alert("Por favor, selecione uma resposta!");
-        return;
-    }
-
-    const respostaCorreta = document.querySelector('input[value="' + respostaSelecionada.value + '"]');
-    if (respostaCorreta) {
-        alert("Resposta correta!");
-    } else {
-        alert("Resposta incorreta!");
-    }
-}
-
-// Carregar perguntas ao abrir a página de quiz
-if (window.location.pathname.includes('pergunta.html')) {
-    carregarPerguntas();
-}
-
+        window.onload = function() {
+            carregarHistoria();
+            carregarRanking();
+        };
     </script>
-
-   
 </body>
 </html>
