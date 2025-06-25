@@ -174,7 +174,9 @@ app.get('/perguntas/:historia_id', (req, res) => {
         res.json(rows);
     });
 });
-
+app.get('/', (req, res) => {
+  res.send('API do sistema está funcionando!');
+});
 // Iniciar o servidor
 app.listen(PORT, () => {
     console.log(`Servidor rodando em http://localhost:${PORT}`);
